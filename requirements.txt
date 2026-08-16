@@ -1,6 +1,6 @@
 Flask
 gunicorn
-libsql-experimental
+libsql
 google-cloud-vision
 google-auth
 python-dateutil
