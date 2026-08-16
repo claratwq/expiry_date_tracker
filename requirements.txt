@@ -1,0 +1,7 @@
+Flask
+gunicorn
+libsql-experimental
+google-cloud-vision
+google-auth
+python-dateutil
+requests
