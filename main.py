@@ -5,8 +5,7 @@ import requests
 import flet as ft
 
 # Replace with your deployed Render URL after Step 6
-RENDER_API_URL = os.getenv("RENDER_API_URL", "http://127.0.0.1:5000")
-
+RENDER_API_URL = "https://expiry-date-tracker.onrender.com"
 
 def main(page: ft.Page):
     page.title = "Expiry Scanner"
