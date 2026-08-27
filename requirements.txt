@@ -5,5 +5,4 @@ google-cloud-vision
 google-auth
 python-dateutil
 requests
-flet
 flask-cors
