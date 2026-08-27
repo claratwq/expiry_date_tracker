@@ -3,8 +3,10 @@ import base64
 from flask import Flask, request, jsonify
 from database_ops import init_db, add_item_to_db, get_items_from_db, delete_item_from_db
 from OCR import detect_text_from_bytes, extract_expiry_date, extract_item_name
+from flask_cors import CORS  # Add CORS import
 
 app = Flask(__name__)
+CORS(app)
 
 # Initialize Turso table on server boot
 init_db()

@@ -54,10 +54,14 @@ def main(page: ft.Page):
     def on_picker_result(e: ft.FilePickerResultEvent, scan_type: str):
         if not e.files or len(e.files) == 0:
             return
-        file_path = e.files[0].path
-        with open(file_path, "rb") as f:
-            image_bytes = f.read()
-        process_remote_ocr(image_bytes, scan_type)
+        
+        # In web mode, use file upload bytes
+        uf = e.files[0]
+        if hasattr(uf, "bytes") and uf.bytes:
+            process_remote_ocr(uf.bytes, scan_type)
+        elif hasattr(uf, "path") and uf.path:
+            with open(uf.path, "rb") as f:
+                process_remote_ocr(f.read(), scan_type)
 
     file_picker = ft.FilePicker()
     page.overlay.append(file_picker)
@@ -201,4 +205,4 @@ def main(page: ft.Page):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    ft.app(target=main, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
+    ft.run(main, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=port)
