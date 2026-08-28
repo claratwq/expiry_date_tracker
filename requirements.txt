@@ -1,7 +1,7 @@
 Flask
 gunicorn
 libsql
-google-cloud-vision
+google-genai
 google-auth
 python-dateutil
 requests

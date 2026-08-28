@@ -3,7 +3,7 @@ import base64
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from database_ops import init_db, add_item_to_db, get_items_from_db, delete_item_from_db
-from OCR import detect_text_from_bytes, extract_expiry_date, extract_item_name
+from llm_vision import extract_product_info_from_images
 
 app = Flask(__name__)
 CORS(app)
@@ -55,21 +55,24 @@ def remove_item(item_id):
     delete_item_from_db(item_id)
     return jsonify({"status": "deleted"}), 200
 
-@app.route("/ocr/name", methods=["POST"])
-def ocr_name():
-    data = request.json or {}
-    image_bytes = base64.b64decode(data.get("image_b64", ""))
-    lines = detect_text_from_bytes(image_bytes)
-    name = extract_item_name(lines)
-    return jsonify({"name": name})
 
-@app.route("/ocr/date", methods=["POST"])
-def ocr_date():
+@app.route("/analyze-label", methods=["POST"])
+def analyze_label():
     data = request.json or {}
-    image_bytes = base64.b64decode(data.get("image_b64", ""))
-    lines = detect_text_from_bytes(image_bytes)
-    exp_date = extract_expiry_date(lines)
-    return jsonify({"expiry_date": exp_date})
+    images_b64 = data.get("images_b64", [])  # Expects a list of base64 strings
+    
+    if isinstance(images_b64, str):
+        images_b64 = [images_b64]
+
+    image_bytes_list = []
+    for b64_str in images_b64:
+        try:
+            image_bytes_list.append(base64.b64decode(b64_str))
+        except Exception:
+            continue
+
+    product_data = extract_product_info_from_images(image_bytes_list)
+    return jsonify(product_data), 200
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
