@@ -33,7 +33,7 @@ def health_check():
 def fetch_items():
     try:
         rows = get_items_from_db()
-        items = [{"id": r[0], "name": r[1], "expiry_date": r[2]} for r in rows]
+        items = [{"id": r[0], "name": r[1], "expiry_date": r[2], "date_type": r[4]} for r in rows]
         return jsonify(items), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -42,7 +42,7 @@ def fetch_items():
 def create_item():
     data = request.json or {}
     name = data.get("name", "Unnamed Item")
-    date_type = data.get("date_type", "Best Before")  # Accept date_type
+    date_type = data.get("date_type", "Expiry")  # Accept date_type
     expiry_date = data.get("expiry_date")
     
     if not expiry_date:
