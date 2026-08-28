@@ -18,7 +18,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
-                date_type TEXT DEFAULT 'Best Before',
+                date_type TEXT DEFAULT 'Expiry',
                 expiry_date TEXT,
                 notified INTEGER DEFAULT 0
             )
