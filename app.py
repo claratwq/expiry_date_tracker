@@ -33,7 +33,7 @@ def health_check():
 def fetch_items():
     try:
         rows = get_items_from_db()
-        items = [{"id": r[0], "name": r[1], "expiry_date": r[2], "date_type": r[4]} for r in rows]
+        items = [{"id": r[0], "name": r[1], "expiry_date": r[2], "date_type": r[3]} for r in rows]
         return jsonify(items), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

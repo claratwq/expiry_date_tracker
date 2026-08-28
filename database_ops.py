@@ -56,7 +56,7 @@ def get_items_from_db():
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, name, date_type, expiry_date FROM items ORDER BY expiry_date ASC")
+        cursor.execute("SELECT id, name, expiry_date, date_type  FROM items ORDER BY expiry_date ASC")
         rows = cursor.fetchall()
         return rows
     finally:
