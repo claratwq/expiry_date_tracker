@@ -1,15 +1,25 @@
 import os
 import base64
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from database_ops import init_db, add_item_to_db, get_items_from_db, delete_item_from_db
 from OCR import detect_text_from_bytes, extract_expiry_date, extract_item_name
-from flask_cors import CORS  # Add CORS import
 
 app = Flask(__name__)
 CORS(app)
 
-# Initialize Turso table on server boot
-init_db()
+# Track if database has been initialized
+_db_initialized = False
+
+@app.before_request
+def ensure_db_ready():
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            init_db()
+            _db_initialized = True
+        except Exception as e:
+            app.logger.error(f"Database initialization failed: {e}")
 
 @app.route("/", methods=["GET"])
 def index():
@@ -21,15 +31,22 @@ def health_check():
 
 @app.route("/items", methods=["GET"])
 def fetch_items():
-    rows = get_items_from_db()
-    items = [{"id": r[0], "name": r[1], "expiry_date": r[2]} for r in rows]
-    return jsonify(items)
+    try:
+        rows = get_items_from_db()
+        items = [{"id": r[0], "name": r[1], "expiry_date": r[2]} for r in rows]
+        return jsonify(items), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/items", methods=["POST"])
 def create_item():
     data = request.json or {}
     name = data.get("name", "Unnamed Item")
     expiry_date = data.get("expiry_date")
+    
+    if not expiry_date:
+        return jsonify({"error": "expiry_date is required"}), 400
+        
     add_item_to_db(name, expiry_date)
     return jsonify({"status": "created"}), 201
 
