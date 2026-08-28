@@ -41,13 +41,17 @@ def fetch_items():
 @app.route("/items", methods=["POST"])
 def create_item():
     data = request.json or {}
-    name = data.get("name", "Unnamed Item")
+    raw_name = data.get("name", "Unnamed Item")
+    date_type = data.get("date_type", "Best Before")
     expiry_date = data.get("expiry_date")
     
     if not expiry_date:
         return jsonify({"error": "expiry_date is required"}), 400
         
-    add_item_to_db(name, expiry_date)
+    # Format name with date_type tag directly
+    full_name = f"{raw_name} ({date_type})"
+    
+    add_item_to_db(full_name, expiry_date)
     return jsonify({"status": "created"}), 201
 
 @app.route("/items/<int:item_id>", methods=["DELETE"])
