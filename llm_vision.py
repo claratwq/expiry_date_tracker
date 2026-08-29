@@ -11,7 +11,7 @@ You are an expert product and grocery label parser. Analyze the provided image(s
 
 Extract the following information:
 1. "item_name": Identify the full product name including the brand if visible (e.g., "HL Chocolate Milk", "Marigold Strawberry Yogurt", "Laughing Cow Cheese Cubes", "Eggs"). If the brand is missing or unclear, provide just the item name (e.g., "Whole Milk").
-2. "date_type": Determine whether the date label represents an "Expiry Date" or a "Best Before Date". Return strictly "Expiry" or "Best Before". If unclear, default to "Best Before".
+2. "date_type": Determine whether the date label represents an "Expiry Date" or a "Best Before Date". Return strictly "Expiry" or "Best Before". If unclear, infer based on the product.
 3. "expiry_date": Extract the date shown on the label. Standardize the date into ISO format "YYYY-MM-DD". If the year is ambiguous or missing (e.g., "15 AUG"), infer the current or upcoming year. If no date is found, return null.
 
 Return ONLY a JSON object adhering to this schema:
@@ -62,7 +62,7 @@ def extract_product_info_from_images(image_bytes_list: list[bytes]) -> dict:
         result = json.loads(response.text)
         return {
             "item_name": result.get("item_name", "Unknown Product"),
-            "date_type": result.get("date_type", "Best Before"),
+            "date_type": result.get("date_type", "Expiry"),
             "expiry_date": result.get("expiry_date")
         }
 
