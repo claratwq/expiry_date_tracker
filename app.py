@@ -2,13 +2,22 @@ import os
 import base64
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from database_ops import init_db, add_item_to_db, get_items_from_db, delete_item_from_db
 from llm_vision import extract_product_info_from_images
 
 app = Flask(__name__)
 CORS(app)
 
-# Track if database has been initialized
+# Add limiter to manage requests from Streamlit
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "60 per minute"],
+    storage_uri="memory://"
+)
+
 _db_initialized = False
 
 @app.before_request
@@ -30,6 +39,7 @@ def health_check():
     return jsonify({"status": "ok"}), 200
 
 @app.route("/items", methods=["GET"])
+@limiter.exempt  # Exempt read operations so page reruns don't trigger 429 errors
 def fetch_items():
     try:
         rows = get_items_from_db()
@@ -39,10 +49,11 @@ def fetch_items():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/items", methods=["POST"])
+@limiter.limit("30 per minute")
 def create_item():
     data = request.json or {}
     name = data.get("name", "Unnamed Item")
-    date_type = data.get("date_type", "Expiry")  # Accept date_type
+    date_type = data.get("date_type", "Expiry")
     expiry_date = data.get("expiry_date")
     
     if not expiry_date:
@@ -60,11 +71,11 @@ def remove_item(item_id):
     delete_item_from_db(item_id)
     return jsonify({"status": "deleted"}), 200
 
-
 @app.route("/analyze-label", methods=["POST"])
+@limiter.limit("20 per minute")
 def analyze_label():
     data = request.json or {}
-    images_b64 = data.get("images_b64", [])  # Expects a list of base64 strings
+    images_b64 = data.get("images_b64", [])
     
     if isinstance(images_b64, str):
         images_b64 = [images_b64]
